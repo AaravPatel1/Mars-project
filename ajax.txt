@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SpaceX Rockets</title>
+    <!-- Materialize CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        #rocketsInfo {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .rocket-card {
+            width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <h1>SpaceX Rockets</h1>
+    <button id="fetchDataButton" class="btn waves-effect waves-light">Fetch Rockets Info</button>
+    <div id="rocketsInfo" class="row"></div>
+
+    <script>
+        document.getElementById('fetchDataButton').addEventListener('click', fetchRocketsInfo);
+        
+        async function fetchRocketsInfo() {
+            try {
+                // Fetch data from the SpaceX rockets API
+                const response = await fetch('https://api.spacexdata.com/v4/rockets');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                const data = await response.json();
+                displayRocketsInfo(data);
+            } catch (error) {
+                console.error('Fetch error:', error);
+            }
+        }
+
+        function displayRocketsInfo(rockets) {
+            const rocketsInfoDiv = document.getElementById('rocketsInfo');
+            rocketsInfoDiv.innerHTML = ''; // Clear previous data
+
+            rockets.forEach(rocket => {
+                const rocketCard = document.createElement('div');
+                rocketCard.classList.add('card', 'rocket-card', 'col', 's12', 'm6');
+                rocketCard.innerHTML = `
+                    <div class="card-content">
+                        <span class="card-title">${rocket.name}</span>
+                        <p><strong>Description:</strong> ${rocket.description}</p>
+                        <p><strong>First Flight:</strong> ${new Date(rocket.first_flight).toLocaleDateString()}</p>
+                        <p><strong>Country:</strong> ${rocket.country}</p>
+                        <p><strong>Active:</strong> ${rocket.active ? 'Yes' : 'No'}</p>
+                    </div>
+                    <div class="card-action">
+                        <a href="${rocket.wikipedia}" target="_blank">Wikipedia</a>
+                    </div>
+                `;
+                rocketsInfoDiv.appendChild(rocketCard);
+            });
+        }
+    </script>
+
+    <!-- Materialize JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Astronomy Picture of the Day</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+<style>
+    .apod-info {
+        border: 1px solid #ccc;
+        padding: 15px;
+        margin: 10px;
+        background-color: #f9f9f9;
+        text-align: center;
+        flex: 1 1 calc(25% - 40px);
+        box-sizing: border-box;
+    }
+    .apod-info img, .apod-info iframe {
+        max-width: 100%;
+        height: auto;
+    }
+    .apod-data {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-around;
+    }
+    @media (max-width: 768px) {
+        .apod-info {
+            flex: 1 1 calc(50% - 40px);
+        }
+    }
+    @media (max-width: 480px) {
+        .apod-info {
+            flex: 1 1 100%;
+        }
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>Astronomy Picture of the Day</h1>
+    <button id="fetchDataButton" class="btn">Fetch Latest APODs</button>
+
+    <!-- Filter Options -->
+    <div class="filter-options">
+        <label>
+            <input type="radio" name="mediaFilter" value="all" checked> All
+        </label>
+        <label>
+            <input type="radio" name="mediaFilter" value="image"> Images Only
+        </label>
+        <label>
+            <input type="radio" name="mediaFilter" value="video"> Videos Only
+        </label>
+    </div>
+
+    <div id="apodData" class="apod-data"></div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script>
+$(document).ready(function() {
+    $('#fetchDataButton').click(function() {
+        $.ajax({
+            url: 'https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY&count=10', // Replace with your API key
+            method: 'GET',
+            success: function(data) {
+                displayApodData(data);
+            },
+            error: function(error) {
+                $('#apodData').append('<p>Error: Unable to fetch APOD data.</p>');
+            }
+        });
+    });
+
+    function displayApodData(data) {
+        const apodDataDiv = $('#apodData');
+        apodDataDiv.empty(); // Clear previous data
+
+        const selectedFilter = $('input[name="mediaFilter"]:checked').val();
+
+        data.forEach(apod => {
+            if (selectedFilter === 'image' && apod.media_type !== 'image') return;
+            if (selectedFilter === 'video' && apod.media_type !== 'video') return;
+
+            const apodDiv = $('<div class="apod-info"></div>');
+            apodDiv.append(`<h5>${apod.title}</h5>`);
+            apodDiv.append(`<p>${apod.date}</p>`);
+
+            if (apod.media_type === 'video') {
+                apodDiv.append(`<iframe src="${apod.url}" frameborder="0" allowfullscreen></iframe>`);
+            } else {
+                apodDiv.append(`<img src="${apod.url}" alt="${apod.title}">`);
+            }
+
+            apodDiv.append(`<p>${apod.explanation}</p>`);
+            apodDataDiv.append(apodDiv);
+        });
+    }
+
+    // Re-fetch data when filter is changed
+    $('input[name="mediaFilter"]').change(function() {
+        $('#fetchDataButton').click(); // Trigger the button click to refresh with the new filter
+    });
+});
+</script>
+</body>
+</html>
